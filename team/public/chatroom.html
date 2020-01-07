@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+<script async src="//s.imgur.com/min/embed.js" charset="utf-8"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+    <style>
+        #block {
+            height: 700px;
+            width: 600px;
+            margin:0px auto;
+        }
+        body{
+            background-image: url("./background.jpg");
+            padding-top:100px;
+        }
+        #room {
+            height: 450px;
+            width: 100%;
+            border:1px solid black;
+            overflow: auto;
+        }
+
+        input[name="name"] {
+            height: 30px;
+            width: 10%;
+        }
+
+        input[name="message"] {
+            height: 30px;
+            width: 80%;
+        }
+
+        input[name="submit"] {
+            height: 30px;
+        }
+
+        .namebox {
+            width: 15%;
+            display: inline-block;
+
+        }
+        .test{
+            width:10px;
+            height: 10px;
+        }
+        .imgur{
+            float:right;
+        }
+        .img{
+            width:200px;
+            height:100px;
+        }
+        h2{
+            text-align: center;
+        }
+    </style>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+
+</head>
+
+<body>
+    <div id="block">
+        <h2><a href="https://imgur.com/" target="_blank">上傳圖片請使用imgur</a></h2>
+        <div id="room">
+                <span class="namebox">名稱</span>
+                <span class="message">內容</span>
+        </div>
+        <form name="form" id="form">
+            <input name="name" id="name" type="text" placeholder="暱稱">
+            <input name="message" id="message" type="text" placeholder="訊息">
+            <input name="submit" id="submit" type="button"  value="送出" onclick="send()">
+        </form>
+
+    </div>
+</body>
+<script src="http://cdn.socket.io/socket.io-1.2.0.js"></script>
+<script src="./js/CheckPhoto.js"></script>
+<script>
+    
+
+
+    function array2string(name, message) {
+        var array = []
+        array.push(name)
+        array.push(message)
+        return array.toString()
+    }
+
+
+    $(function () {
+        socket = io('http://localhost:3000')
+        socket.on('chat', function (msg) {
+            var form = document.forms["form"];
+            msg_array = msg.split(",");
+            var messagebox = document.createElement("div");
+            messagebox.className = "messagebox";
+            var namebox = document.createElement("span");
+            namebox.className = "namebox";
+            var name = document.createTextNode(msg_array[0]);
+            var message = document.createTextNode(msg_array[1]);
+            namebox.appendChild(name);
+            messagebox.appendChild(namebox);
+            messagebox.appendChild(message);
+            if(check(msg_array[1]))
+            {
+                messagebox.innerHTML += `<img src="${msg_array[1]}" class="img" >`
+            }
+            room.appendChild(messagebox);
+            var roomBar = document.getElementById("room");
+            document.body.focus();
+            roomBar.scrollTop = roomBar.scrollHeight;
+        });
+    });
+
+    function send() {
+        var message = document.getElementById("message").value
+        var name = document.getElementById("name").value
+        if(message.length == 0 )
+        return console.log('請輸入文字後再送出')
+        if(name.length == 0 )
+        return console.log('請輸入名稱再送出')
+        var string = array2string(name,message)
+        socket.emit('chat', string);
+        document.getElementById("message").value = "";
+    }
+
+
+    $('#message').keydown(function (event) {
+        if (event.which == 13) {
+            send();
+        }
+    })
+
+</script>
+
+</html>
